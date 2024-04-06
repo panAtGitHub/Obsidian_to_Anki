@@ -12,8 +12,9 @@ const TAG_PREFIX:string = "Tags: "
 export const TAG_SEP:string = " "
 export const ID_REGEXP_STR: string = String.raw`\n?(?:<!--)?(?:ID: (\d+).*)`
 export const TAG_REGEXP_STR: string = String.raw`(Tags: .*)`
-const OBS_TAG_REGEXP: RegExp = /#(\w+)/g
-
+const OBS_TAG_REGEXP: RegExp = /#([\p{L}\p{N}\p{Emoji}\p{M}_-\uFF0C/]+)/gu
+// 正则表达式用于匹配Obsidian标签，包括Unicode字符和中文逗号，其中最重要的是/，这个在obsidian中分级标签是：父标签/子标签
+// The regular expression is used to match Obsidian tags, including Unicode characters and Chinese commas. Most importantly, '/' is used for hierarchical tagging in Obsidian as: parent_tag/sub_tag.
 const ANKI_CLOZE_REGEXP: RegExp = /{{c\d+::[\s\S]+?}}/
 export const CLOZE_ERROR: number = 42
 export const NOTE_TYPE_ERROR: number = 69
@@ -97,14 +98,15 @@ abstract class AbstractNote {
 			const context_field = data.context_fields[this.note_type]
 			template["fields"][context_field] += context
 		}
-		if (data.add_obs_tags) {
-			for (let key in template["fields"]) {
-				for (let match of template["fields"][key].matchAll(OBS_TAG_REGEXP)) {
-					this.tags.push(match[1])
-				}
-				template["fields"][key] = template["fields"][key].replace(OBS_TAG_REGEXP, "")
-	        }
-		}
+        if (data.add_obs_tags) {
+            for (let key in template["fields"]) {
+                for (let match of template["fields"][key].matchAll(OBS_TAG_REGEXP)) {
+                    let formattedTag = match[1].replace(/\//g, "::"); // 将/替换成:: Replace '/' with '::'.
+                    this.tags.push(formattedTag); 
+                }
+                template["fields"][key] = template["fields"][key].replace(OBS_TAG_REGEXP, "");
+            }
+          }
         template["tags"].push(...this.tags)
         template["deckName"] = deck
         return {note: template, identifier: this.identifier}
@@ -302,14 +304,15 @@ export class RegexNote {
 		if (this.note_type.includes("Cloze") && !(note_has_clozes(template))) {
 			this.identifier = CLOZE_ERROR //An error code that says "don't add this note!"
 		}
-		if (data.add_obs_tags) {
-			for (let key in template["fields"]) {
-				for (let match of template["fields"][key].matchAll(OBS_TAG_REGEXP)) {
-					this.tags.push(match[1])
-				}
-				template["fields"][key] = template["fields"][key].replace(OBS_TAG_REGEXP, "")
-	        }
-		}
+        if (data.add_obs_tags) {
+            for (let key in template["fields"]) {
+                for (let match of template["fields"][key].matchAll(OBS_TAG_REGEXP)) {
+                    let formattedTag = match[1].replace(/\//g, "::"); // 将/替换成:: Replace '/' with '::'.
+                    this.tags.push(formattedTag); 
+                }
+                template["fields"][key] = template["fields"][key].replace(OBS_TAG_REGEXP, "");
+            }
+         }
 		template["tags"].push(...this.tags)
         template["deckName"] = deck
 		return {note: template, identifier: this.identifier}
