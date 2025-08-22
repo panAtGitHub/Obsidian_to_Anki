@@ -12,7 +12,8 @@ const TAG_PREFIX:string = "Tags: "
 export const TAG_SEP:string = " "
 export const ID_REGEXP_STR: string = String.raw`\n?(?:<!--)?(?:ID: (\d+).*)`
 export const TAG_REGEXP_STR: string = String.raw`(Tags: .*)`
-const OBS_TAG_REGEXP: RegExp = /#(\w+)/g
+// Match Obsidian tags including non-Latin characters and nested tags separated by '/'
+const OBS_TAG_REGEXP: RegExp = /#([\p{L}\p{N}_\/\-]+)/gu
 
 const ANKI_CLOZE_REGEXP: RegExp = /{{c\d+::[\s\S]+?}}/
 export const CLOZE_ERROR: number = 42
@@ -99,12 +100,12 @@ abstract class AbstractNote {
 		}
 		if (data.add_obs_tags) {
 			for (let key in template["fields"]) {
-				for (let match of template["fields"][key].matchAll(OBS_TAG_REGEXP)) {
-					this.tags.push(match[1])
-				}
-				template["fields"][key] = template["fields"][key].replace(OBS_TAG_REGEXP, "")
-	        }
-		}
+                                for (let match of template["fields"][key].matchAll(OBS_TAG_REGEXP)) {
+                                        this.tags.push(match[1].replace(/\//g, "::"))
+                                }
+                                template["fields"][key] = template["fields"][key].replace(OBS_TAG_REGEXP, "")
+                }
+                }
         template["tags"].push(...this.tags)
         template["deckName"] = deck
         return {note: template, identifier: this.identifier}
@@ -128,7 +129,10 @@ export class Note extends AbstractNote {
 
     getTags(): string[] {
         if (this.split_text[this.split_text.length-1].startsWith(TAG_PREFIX)) {
-            return this.split_text.pop().slice(TAG_PREFIX.length).split(TAG_SEP)
+            return this.split_text.pop()
+                .slice(TAG_PREFIX.length)
+                .split(TAG_SEP)
+                .map(tag => tag.replace(/\//g, "::"))
         } else {
             return []
         }
@@ -195,7 +199,7 @@ export class InlineNote extends AbstractNote {
         const result = this.text.match(InlineNote.TAG_REGEXP)
         if (result) {
             this.text = this.text.slice(0, result.index).trim()
-            return result[1].split(TAG_SEP)
+            return result[1].split(TAG_SEP).map(tag => tag.replace(/\//g, "::"))
         } else {
             return []
         }
@@ -259,7 +263,9 @@ export class RegexNote {
 		this.match = match
 		this.note_type = note_type
 		this.identifier = id ? parseInt(this.match.pop()) : null
-		this.tags = tags ? this.match.pop().slice(TAG_PREFIX.length).split(TAG_SEP) : []
+                this.tags = tags
+                        ? this.match.pop().slice(TAG_PREFIX.length).split(TAG_SEP).map(tag => tag.replace(/\//g, "::"))
+                        : []
 		this.field_names = fields_dict[note_type]
 		this.curly_cloze = curly_cloze
 		this.formatter = formatter
@@ -304,13 +310,13 @@ export class RegexNote {
 		}
 		if (data.add_obs_tags) {
 			for (let key in template["fields"]) {
-				for (let match of template["fields"][key].matchAll(OBS_TAG_REGEXP)) {
-					this.tags.push(match[1])
-				}
-				template["fields"][key] = template["fields"][key].replace(OBS_TAG_REGEXP, "")
-	        }
-		}
-		template["tags"].push(...this.tags)
+                                for (let match of template["fields"][key].matchAll(OBS_TAG_REGEXP)) {
+                                        this.tags.push(match[1].replace(/\//g, "::"))
+                                }
+                                template["fields"][key] = template["fields"][key].replace(OBS_TAG_REGEXP, "")
+                }
+                }
+                template["tags"].push(...this.tags)
         template["deckName"] = deck
 		return {note: template, identifier: this.identifier}
 	}

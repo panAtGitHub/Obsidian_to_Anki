@@ -516,9 +516,10 @@ class Note:
         else:
             self.identifier = None
         if self.lines[-1].startswith(TAG_PREFIX):
-            self.tags = self.lines.pop()[len(TAG_PREFIX):].split(
-                TAG_SEP
-            )
+            self.tags = [
+                tag.replace('/', '::')
+                for tag in self.lines.pop()[len(TAG_PREFIX):].split(TAG_SEP)
+            ]
         else:
             self.tags = list()
         self.note_type = self.lines[0]
@@ -590,7 +591,7 @@ class InlineNote(Note):
             self.identifier = None
         TAGS = InlineNote.TAG_REGEXP.search(self.text)
         if TAGS is not None:
-            self.tags = TAGS.group(1).split(TAG_SEP)
+            self.tags = [tag.replace('/', '::') for tag in TAGS.group(1).split(TAG_SEP)]
             self.text = self.text[:TAGS.start()]
         else:
             self.tags = list()
@@ -639,9 +640,10 @@ class RegexNote:
             self.identifier = None
         if tags:
             # Even if id were present, tags is now last group
-            self.tags = self.groups.pop()[len(TAG_PREFIX):].split(
-                TAG_SEP
-            )
+            self.tags = [
+                tag.replace('/', '::')
+                for tag in self.groups.pop()[len(TAG_PREFIX):].split(TAG_SEP)
+            ]
         else:
             self.tags = list()
         self.field_names = App.FIELDS_DICT[self.note_type]
@@ -1231,7 +1233,9 @@ class File:
     def setup_global_tags(self):
         result = App.TAG_REGEXP.search(self.file)
         if result is not None:
-            self.global_tags = result.group(1)
+            self.global_tags = " ".join(
+                tag.replace('/', '::') for tag in result.group(1).split(TAG_SEP)
+            )
         else:
             self.global_tags = ""
 

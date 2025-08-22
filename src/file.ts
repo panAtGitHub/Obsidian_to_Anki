@@ -135,7 +135,12 @@ abstract class AbstractFile {
 
     setup_global_tags() {
         const result = this.file.match(this.data.TAG_REGEXP)
-        this.global_tags = result ? result[1] : ""
+        this.global_tags = result
+            ? result[1]
+                .split(TAG_SEP)
+                .map(tag => tag.replace(/\//g, "::"))
+                .join(TAG_SEP)
+            : ""
     }
 
     getHash(): string {
