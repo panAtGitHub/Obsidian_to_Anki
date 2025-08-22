@@ -12,9 +12,9 @@ const TAG_PREFIX:string = "Tags: "
 export const TAG_SEP:string = " "
 export const ID_REGEXP_STR: string = String.raw`\n?(?:<!--)?(?:ID: (\d+).*)`
 export const TAG_REGEXP_STR: string = String.raw`(Tags: .*)`
-// Match Obsidian tags including non-Latin characters, emoji and nested tags separated by '/'
-// Allows underscores, dashes, extended pictographic symbols (emoji), and ZWJ sequences
-const OBS_TAG_REGEXP: RegExp = /#([\p{L}\p{N}\p{Pc}\p{Pd}\p{Extended_Pictographic}\u200D\uFE0F\/]+)/gu
+// Match Obsidian tags including Chinese characters, emoji (with ZWJ sequences) and nested tags separated by '/'
+// Allows combining marks, underscores, hyphens and the full-width comma
+const OBS_TAG_REGEXP: RegExp = /#([\p{L}\p{N}\p{Emoji}\p{M}_-\uFF0C\/]+)/gu
 
 const ANKI_CLOZE_REGEXP: RegExp = /{{c\d+::[\s\S]+?}}/
 export const CLOZE_ERROR: number = 42
@@ -99,13 +99,14 @@ abstract class AbstractNote {
 			const context_field = data.context_fields[this.note_type]
 			template["fields"][context_field] += context
 		}
-		if (data.add_obs_tags) {
-			for (let key in template["fields"]) {
+                if (data.add_obs_tags) {
+                        for (let key in template["fields"]) {
                                 for (let match of template["fields"][key].matchAll(OBS_TAG_REGEXP)) {
-                                        this.tags.push(match[1].replace(/\//g, "::"))
+                                        const formattedTag = match[1].replace(/\//g, "::")
+                                        this.tags.push(formattedTag)
                                 }
                                 template["fields"][key] = template["fields"][key].replace(OBS_TAG_REGEXP, "")
-                }
+                        }
                 }
         template["tags"].push(...this.tags)
         template["deckName"] = deck
@@ -309,13 +310,14 @@ export class RegexNote {
 		if (this.note_type.includes("Cloze") && !(note_has_clozes(template))) {
 			this.identifier = CLOZE_ERROR //An error code that says "don't add this note!"
 		}
-		if (data.add_obs_tags) {
-			for (let key in template["fields"]) {
+                if (data.add_obs_tags) {
+                        for (let key in template["fields"]) {
                                 for (let match of template["fields"][key].matchAll(OBS_TAG_REGEXP)) {
-                                        this.tags.push(match[1].replace(/\//g, "::"))
+                                        const formattedTag = match[1].replace(/\//g, "::")
+                                        this.tags.push(formattedTag)
                                 }
                                 template["fields"][key] = template["fields"][key].replace(OBS_TAG_REGEXP, "")
-                }
+                        }
                 }
                 template["tags"].push(...this.tags)
         template["deckName"] = deck
