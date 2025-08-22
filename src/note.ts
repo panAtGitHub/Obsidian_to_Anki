@@ -12,8 +12,9 @@ const TAG_PREFIX:string = "Tags: "
 export const TAG_SEP:string = " "
 export const ID_REGEXP_STR: string = String.raw`\n?(?:<!--)?(?:ID: (\d+).*)`
 export const TAG_REGEXP_STR: string = String.raw`(Tags: .*)`
-// Match Obsidian tags including non-Latin characters and nested tags separated by '/'
-const OBS_TAG_REGEXP: RegExp = /#([\p{L}\p{N}_\/\-]+)/gu
+// Match Obsidian tags including non-Latin characters, emoji and nested tags separated by '/'
+// Allows underscores, dashes, extended pictographic symbols (emoji), and ZWJ sequences
+const OBS_TAG_REGEXP: RegExp = /#([\p{L}\p{N}\p{Pc}\p{Pd}\p{Extended_Pictographic}\u200D\uFE0F\/]+)/gu
 
 const ANKI_CLOZE_REGEXP: RegExp = /{{c\d+::[\s\S]+?}}/
 export const CLOZE_ERROR: number = 42

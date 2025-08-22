@@ -3,7 +3,7 @@ START
 Basic
 This is a test.
 Back: Test successful!
-Tags: Tag1 Tag2 Tag3 动物/狗
+Tags: Tag1 Tag2 Tag3 动物/狗 😀/😺 😀
 END
 
 <!-- CARD -->
@@ -18,6 +18,6 @@ END
 START
 Basic
 This is a test. this should have meow-tag
-And the test is continuing. #meow #动物/狗
+And the test is continuing. #meow #动物/狗 #😀/😺 #😀
 Back: Test successful!
 END

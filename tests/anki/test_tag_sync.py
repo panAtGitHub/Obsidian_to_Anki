@@ -72,7 +72,9 @@ def test_cards_front_back_tag_type(col: Collection):
     assert note1.has_tag('Tag2')
     assert note1.has_tag('Tag3')
     assert note1.has_tag('动物::狗')
-    assert len(note1.tags) == 5
+    assert note1.has_tag('😀::😺')
+    assert note1.has_tag('😀')
+    assert len(note1.tags) == 7
 
     note2 = find_note_with_1st_field("This is a test. This should not have any tags except default ones.<br />\nAnd the test is continuing.", anki_IDs, col)
     # assert note2.fields[0] == "This is a test. This should not have any tags except default ones.<br />\nAnd the test is continuing."
@@ -80,12 +82,14 @@ def test_cards_front_back_tag_type(col: Collection):
     assert note2.has_tag('Obsidian_to_Anki')
     assert len(note2.tags) == 1
 
-    note3 = find_note_with_1st_field("This is a test. this should have meow-tag<br />\nAnd the test is continuing. ", anki_IDs, col)
+    note3 = find_note_with_1st_field("This is a test. this should have meow-tag<br />\nAnd the test is continuing.    ", anki_IDs, col)
     # assert note3.fields[0] == "This is a test. this should have meow-tag<br />\nAnd the test is continuing. "
     assert note3.fields[1] == "Test successful!"
     assert note3.has_tag('meow')
     assert note3.has_tag('动物::狗')
-    assert len(note3.tags) == 3
+    assert note3.has_tag('😀::😺')
+    assert note3.has_tag('😀')
+    assert len(note3.tags) == 5
 
     note4 = find_note_with_1st_field("This is a test with file tags specified in new line", anki_IDs, col)
     # assert note4.fields[0] == "This is a test with file tags specified in new line"
